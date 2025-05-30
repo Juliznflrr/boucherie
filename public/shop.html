@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boucherie Deluxe - Vente en ligne</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+    <style>
+        .category-btn.active {
+            background-color: #b91c1c;
+            color: white;
+        }
+        .cart-item-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #b91c1c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .checkout-form input:focus, .checkout-form textarea:focus, .checkout-form select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #b91c1c;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-utensils text-red-700 text-2xl mr-2"></i>
+                <h1 class="text-xl font-bold text-gray-800">Boucherie Deluxe</h1>
+            </div>
+            <div class="relative">
+                <button id="cart-btn" class="text-gray-700 hover:text-red-700 relative">
+                    <i class="fas fa-shopping-cart text-2xl"></i>
+                    <span id="cart-count" class="cart-item-count hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <section class="bg-red-700 rounded-lg p-6 mb-8 text-white">
+            <div class="max-w-2xl">
+                <h2 class="text-3xl font-bold mb-2">Produits frais de qualité supérieure</h2>
+                <p class="mb-4">Découvrez notre sélection de viandes, charcuteries et plats traiteur préparés avec soin par nos artisans.</p>
+                <button class="bg-white text-red-700 px-4 py-2 rounded font-medium hover:bg-gray-100 transition">
+                    Nos spécialités
+                </button>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="category-btn active px-4 py-2 rounded-full border border-gray-300 font-medium" data-category="all">
+                    Tous les produits
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 font-medium" data-category="viande">
+                    Viandes
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 font-medium" data-category="charcuterie">
+                    Charcuteries
+                </button>
+                <button class="category-btn px-4 py-2 rounded-full border border-gray-300 font-medium" data-category="traiteur">
+                    Traiteur
+                </button>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Nos produits</h2>
+            <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                </div>
+        </section>
+    </main>
+
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="p-4 h-full flex flex-col">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 class="text-xl font-bold">Votre Panier</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 overflow-y-auto py-4">
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                    <p>Votre panier est vide</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-4">
+                <div class="flex justify-between mb-4">
+                    <span class="font-medium">Total:</span>
+                    <span id="cart-total" class="font-bold">0.00 €</span>
+                </div>
+                <button id="checkout-btn" class="w-full bg-red-700 text-white py-3 rounded font-medium hover:bg-red-800 transition disabled:opacity-50" disabled>
+                    Commander
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Finaliser la commande</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="checkout-form" class="checkout-form space-y-4">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
+                        <input type="text" id="name" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                        <input type="tel" id="phone" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Adresse de livraison</label>
+                        <textarea id="address" name="address" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="pickup-day" class="block text-sm font-medium text-gray-700 mb-1">Jour du retrait de la commande</label>
+                        <select id="pickup-day" name="pickupDay" required class="w-full px-3 py-2 border border-gray-300 rounded">
+                            <option value="">Sélectionnez un jour</option>
+                            <option value="jeudi">Jeudi</option>
+                            <option value="vendredi">Vendredi</option>
+                            <option value="samedi">Samedi</option>
+                        </select>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button type="submit" id="submit-order-btn" class="w-full bg-red-700 text-white py-3 rounded font-medium hover:bg-red-800 transition flex justify-center items-center">
+                            <span id="submit-text">Envoyer la commande</span>
+                            <span id="loading-spinner" class="loading-spinner ml-2 hidden"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-md mx-4 p-6 text-center">
+            <div class="text-green-500 text-5xl mb-4">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Commande envoyée avec succès!</h3>
+            <p class="text-gray-600 mb-6">Nous avons reçu votre commande et vous contacterons bientôt pour confirmer.</p>
+            <button id="close-success-modal" class="w-full bg-red-700 text-white py-3 rounded font-medium hover:bg-red-800 transition">
+                Fermer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Sample products data
+        let products = [];
+
+        async function fetchProducts() {
+            try {
+                const res = await fetch('http://localhost:3000/api/produits');
+                if (!res.ok) throw new Error('Erreur chargement produits');
+                products = await res.json();
+                renderProducts();
+            } catch (err) {
+                console.error('Erreur chargement produits dynamiques:', err);
+            }
+        }
+
+        // Cart state
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentCategory = 'all';
+
+        // DOM Elements
+        const productsContainer = document.getElementById('products-container');
+        const cartBtn = document.getElementById('cart-btn');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const closeCartBtn = document.getElementById('close-cart');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const cartCount = document.getElementById('cart-count');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const checkoutModal = document.getElementById('checkout-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const checkoutForm = document.getElementById('checkout-form');
+        const successModal = document.getElementById('success-modal');
+        const closeSuccessModalBtn = document.getElementById('close-success-modal');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const submitOrderBtn = document.getElementById('submit-order-btn');
+        const submitText = document.getElementById('submit-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // Initialize the app
+        function init() {
+            fetchProducts(); // <== au lieu de renderProducts()
+            renderCart();
+            updateCartCount();
+        }
+            
+        // Event listeners
+        cartBtn.addEventListener('click', toggleCart);
+        closeCartBtn.addEventListener('click', toggleCart);
+        checkoutBtn.addEventListener('click', openCheckoutModal);
+        closeModalBtn.addEventListener('click', closeCheckoutModal);
+        checkoutForm.addEventListener('submit', submitOrder);
+        closeSuccessModalBtn.addEventListener('click', closeSuccessModal);
+        
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                renderProducts();
+            });
+        });
+        
+
+        // Render products based on current category
+        function renderProducts() {
+            productsContainer.innerHTML = '';
+            
+            const filteredProducts = currentCategory === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentCategory);
+            
+            filteredProducts.forEach(product => {
+                const productEl = document.createElement('div');
+                productEl.className = 'product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300';
+                // Indicateur prixType
+                let priceTypeLabel = '';
+                if (product.priceType === 'kilo') {
+                    priceTypeLabel = '<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-2">au kilo</span>';
+                } else {
+                    priceTypeLabel = '<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">à la pièce</span>';
+                }
+                productEl.innerHTML = `
+                    <div class="h-48 overflow-hidden">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">${product.name}</h3>
+                        <div class="mb-1">${priceTypeLabel}</div>
+                        <p class="text-gray-600 text-sm mb-2">${product.description}</p>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="font-bold text-red-700">${product.price.toFixed(2)} €</span>
+                            <button class="add-to-cart bg-red-700 text-white px-3 py-1 rounded hover:bg-red-800 transition" data-id="${product.id}">
+                                <i class="fas fa-plus mr-1"></i> Ajouter
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsContainer.appendChild(productEl);
+            });
+            
+            // Add event listeners to "Add to cart" buttons
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = parseInt(e.target.closest('button').dataset.id);
+                    addToCart(productId);
+                });
+            });
+        }
+
+        // Add product to cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            // Si le produit est au kilo, demander la quantité en grammes/kilos
+            if (product.priceType === 'kilo') {
+                showWeightSelector(product);
+                return;
+            }
+
+            const existingItem = cart.find(item => item.id === productId && !item.weight);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: 1
+                });
+            }
+            updateCart();
+            showCartNotification(product.name);
+        }
+
+        // Affiche un sélecteur pour choisir le poids pour les produits au kilo
+        function showWeightSelector(product) {
+            // Crée une modale simple
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-xs text-center">
+                    <h4 class="font-bold mb-4">Choisissez le poids</h4>
+                    <select id="weight-select" class="w-full px-3 py-2 border border-gray-300 rounded mb-4">
+                        <option value="150">150g</option>
+                        <option value="300">300g</option>
+                        <option value="500">500g</option>
+                        <option value="1000">1kg</option>
+                        <option value="custom">Autre poids...</option>
+                    </select>
+                    <input id="custom-weight" type="number" min="1" placeholder="Poids en grammes" class="w-full px-3 py-2 border border-gray-300 rounded mb-4 hidden">
+                    <div class="flex gap-2">
+                        <button id="confirm-weight" class="bg-red-700 text-white px-4 py-2 rounded font-medium flex-1">Ajouter</button>
+                        <button id="cancel-weight" class="bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium flex-1">Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            const weightSelect = modal.querySelector('#weight-select');
+            const customWeightInput = modal.querySelector('#custom-weight');
+            weightSelect.addEventListener('change', () => {
+                if (weightSelect.value === 'custom') {
+                    customWeightInput.classList.remove('hidden');
+                } else {
+                    customWeightInput.classList.add('hidden');
+                }
+            });
+
+            modal.querySelector('#cancel-weight').onclick = () => {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            };
+            modal.querySelector('#confirm-weight').onclick = () => {
+                let weight = weightSelect.value;
+                if (weight === 'custom') {
+                    // Ajoute le produit au panier avec un indicateur spécial
+                    const existingItem = cart.find(item => item.id === product.id && item.weight === undefined && item.priceType === 'kilo');
+                    if (existingItem) {
+                        existingItem.quantity += 1;
+                    } else {
+                        cart.push({
+                            ...product,
+                            quantity: 1,
+                            // pas de champ weight
+                            note: 'à définir avec le client au téléphone'
+                        });
+                    }
+                    updateCart();
+                    showCartNotification(product.name + ' (à définir au téléphone)');
+                    modal.remove();
+                    document.body.style.overflow = 'auto';
+                    return;
+                } else {
+                    weight = parseInt(weight, 10);
+                }
+                // Ajout au panier avec le poids sélectionné
+                const existingItem = cart.find(item => item.id === product.id && item.weight === weight);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        ...product,
+                        quantity: 1,
+                        weight: weight // en grammes
+                    });
+                }
+                updateCart();
+                showCartNotification(product.name + ' (' + weight + 'g)');
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            };
+        }
+
+        // Update cart in UI and localStorage
+        function updateCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+            updateCartCount();
+        }
+
+        // Render cart items
+        function renderCart() {
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>Votre panier est vide</p>
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+                cartTotal.textContent = '0.00 €';
+                return;
+            }
+            
+            checkoutBtn.disabled = false;
+            
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity * (item.weight ? item.weight / 1000 : 1);
+                total += itemTotal;
+
+                const weightLabel = item.weight ? `<span class='text-xs text-gray-500 ml-1'>${item.weight}g</span>` : '';
+                const priceTypeLabel = item.priceType === 'kilo' ? 'au kilo' : 'à la pièce';
+
+                const cartItemEl = document.createElement('div');
+                cartItemEl.className = 'flex justify-between items-center py-3 border-b';
+                cartItemEl.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded mr-3">
+                        <div>
+                            <h4 class="font-medium">${item.name} ${weightLabel}</h4>
+                            <p class="text-xs text-gray-400">${priceTypeLabel}</p>
+                            <p class="text-sm text-gray-500">${item.price.toFixed(2)} €</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <button class="decrease-quantity text-gray-500 hover:text-red-700 px-2" data-id="${item.id}" data-weight="${item.weight||''}">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="mx-2">${item.quantity}</span>
+                        <button class="increase-quantity text-gray-500 hover:text-red-700 px-2" data-id="${item.id}" data-weight="${item.weight||''}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="remove-item text-gray-500 hover:text-red-700 ml-4" data-id="${item.id}" data-weight="${item.weight||''}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(cartItemEl);
+            });
+            
+            cartTotal.textContent = `${total.toFixed(2)} €`;
+            
+            // Add event listeners to cart item buttons
+            document.querySelectorAll('.decrease-quantity').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = parseInt(e.target.closest('button').dataset.id);
+                    const weight = e.target.closest('button').dataset.weight || undefined;
+                    updateCartItemQuantity(productId, -1, weight);
+                });
+            });
+            
+            document.querySelectorAll('.increase-quantity').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = parseInt(e.target.closest('button').dataset.id);
+                    const weight = e.target.closest('button').dataset.weight || undefined;
+                    updateCartItemQuantity(productId, 1, weight);
+                });
+            });
+            
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = parseInt(e.target.closest('button').dataset.id);
+                    const weight = e.target.closest('button').dataset.weight || undefined;
+                    removeFromCart(productId, weight);
+                });
+            });
+        }
+
+        // Update cart item quantity
+        function updateCartItemQuantity(productId, change, weight) {
+            // Pour les produits au kilo, on distingue par id+weight
+            let itemIndex;
+            if (weight) {
+                itemIndex = cart.findIndex(item => item.id === productId && item.weight == weight);
+            } else {
+                itemIndex = cart.findIndex(item => item.id === productId && !item.weight);
+            }
+            if (itemIndex === -1) return;
+            cart[itemIndex].quantity += change;
+            if (cart[itemIndex].quantity <= 0) {
+                cart.splice(itemIndex, 1);
+            }
+            updateCart();
+        }
+
+        // Remove item from cart
+        function removeFromCart(productId, weight) {
+            if (weight) {
+                cart = cart.filter(item => !(item.id === productId && item.weight == weight));
+            } else {
+                cart = cart.filter(item => !(item.id === productId && !item.weight));
+            }
+            updateCart();
+        }
+
+        // Update cart count in header
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (count > 0) {
+                cartCount.textContent = count;
+                cartCount.classList.remove('hidden');
+            } else {
+                cartCount.classList.add('hidden');
+            }
+        }
+
+        // Show notification when item is added to cart
+        function showCartNotification(productName) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg flex items-center';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle mr-2"></i>
+                ${productName} ajouté au panier
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Toggle cart sidebar
+        function toggleCart() {
+            cartSidebar.classList.toggle('translate-x-full');
+        }
+
+        // Open checkout modal
+        function openCheckoutModal() {
+            checkoutModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close checkout modal
+        function closeCheckoutModal() {
+            checkoutModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function submitOrder(e) {
+            e.preventDefault();
+
+            const name = checkoutForm.name.value;
+            const email = checkoutForm.email.value;
+            const phone = checkoutForm.phone.value;
+            const address = checkoutForm.address.value;
+            // Get the selected pickup day from the new select element
+            const pickupDay = checkoutForm.pickupDay.value; 
+
+            const order = {
+                name,
+                email,
+                phone,
+                address,
+                pickupDay, // Include pickupDay in the order object
+                items: cart,
+                total: cart.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2),
+                date: new Date().toISOString()
+            };
+
+            submitText.textContent = "Envoi...";
+            loadingSpinner.classList.remove('hidden');
+            submitOrderBtn.disabled = true;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/commande', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                if (res.ok) {
+                    localStorage.removeItem('cart');
+                    cart = [];
+                    updateCart();
+                    closeCheckoutModal();
+                    successModal.classList.remove('hidden');
+                } else {
+                    alert("Erreur lors de l'envoi de la commande.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion au serveur.");
+            }
+
+            submitText.textContent = "Envoyer la commande";
+            loadingSpinner.classList.add('hidden');
+            submitOrderBtn.disabled = false;
+        }
+
+        // Show success modal
+        function showSuccessModal() {
+            successModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            successModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

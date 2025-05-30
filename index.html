@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Boucherie Charcuterie Traiteur Simon - Produits de qualité</title>
+        <meta name="description" content="Boucherie-charcuterie-traiteur Simon à Flines Lez Raches. Viandes de qualité, charcuterie artisanale et plats traiteur faits maison.">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#313231",
+                            accent: "#D4AF37"
+                        },
+                        fontFamily: {
+                            sans: ['"Open Sans"', 'sans-serif'],
+                            serif: ['"Playfair Display"', 'serif']
+                        }
+                    }
+                }
+            }
+        </script>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+        <style>
+            .mobile-menu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+            }
+            .mobile-menu.open {
+                max-height: 500px;
+                transition: max-height 0.5s ease-in;
+            }
+        </style>
+    </head>
+    <body class="font-sans bg-gray-50 text-gray-800">
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <img src="img/logo Boucherie Simon CMJN JPEG.jpg" alt="Logo Boucherie Simon" class="h-16 w-16 rounded-full mr-4">
+                        <div>
+                            <h1 class="text-2xl font-serif font-bold text-primary">Boucherie Simon</h1>
+                            <p class="text-sm text-gray-600">Boucherie - Charcuterie - Traiteur</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Bouton Hamburger -->
+                    <button id="menu-toggle" class="md:hidden text-gray-700 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                    
+                    <!-- Menu Desktop -->
+                    <nav class="hidden md:flex space-x-6">
+                        <a href="#accueil" class="text-primary hover:text-accent font-medium transition-colors">Accueil</a>
+                        <a href="#produits" class="text-gray-700 hover:text-primary font-medium transition-colors">Nos produits</a>
+                        <a href="#traiteur" class="text-gray-700 hover:text-primary font-medium transition-colors">Service traiteur</a>
+                        <a href="#contact" class="text-gray-700 hover:text-primary font-medium transition-colors">Contact</a>
+                    </nav>
+                </div>
+                
+                <!-- Menu Mobile -->
+                <div id="mobile-menu" class="mobile-menu md:hidden">
+                    <nav class="flex flex-col space-y-3 mt-4 pb-4">
+                        <a href="#accueil" class="text-primary hover:text-accent font-medium py-2 px-4 rounded transition-colors">Accueil</a>
+                        <a href="#produits" class="text-gray-700 hover:text-primary font-medium py-2 px-4 rounded transition-colors">Nos produits</a>
+                        <a href="#traiteur" class="text-gray-700 hover:text-primary font-medium py-2 px-4 rounded transition-colors">Service traiteur</a>
+                        <a href="#contact" class="text-gray-700 hover:text-primary font-medium py-2 px-4 rounded transition-colors">Contact</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+    
+        <script>
+            // Menu Hamburger
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('open');
+                const icon = menuToggle.querySelector('i');
+                if (mobileMenu.classList.contains('open')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+    
+            // Fermer le menu mobile quand on clique sur un lien
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.remove('open');
+                    menuToggle.querySelector('i').classList.remove('fa-times');
+                    menuToggle.querySelector('i').classList.add('fa-bars');
+                });
+            });
+    
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        </script>
+    
+
+    <!-- Hero Section -->
+    <section id="accueil" class="bg-primary text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-serif font-bold mb-4">Boucherie Charcuterie Traiteur Simon</h2>
+            <p class="text-xl mb-8">Qualité et savoir-faire depuis 1985</p>
+            <div class="max-w-3xl mx-auto bg-white bg-opacity-20 p-6 rounded-lg">
+                <p class="mb-4">"Nous sélectionnons avec soin nos viandes et préparons nos produits avec passion pour vous offrir le meilleur."</p>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="produits" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-serif font-bold text-center text-primary mb-12">Nos produits</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Boucherie -->
+                <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                    <img src="img/simone.jpg" alt="Viandes de boucherie" class="w-full h-80 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold text-primary mb-2">Boucherie</h3>
+                        <p class="text-gray-700 mb-4">Viandes françaises de première qualité, sélectionnées avec soin.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Bœuf maturé</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Veau de lait</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Agneau label rouge</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Volailles fermières</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Charcuterie -->
+                <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                    <img src="img/papa.jpg" alt="Charcuterie artisanale" class="w-full h-80 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold text-primary mb-2">Charcuterie</h3>
+                        <p class="text-gray-700 mb-4">Charcuterie artisanale préparée selon des recettes traditionnelles.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Saucissons secs</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Pâtés maison</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Rillettes artisanales</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Jambons de qualité</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Traiteur -->
+                <div class="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                    <img src="img/planche.jpg" alt="Plats traiteur" class="w-full h-80 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold text-primary mb-2">Traiteur</h3>
+                        <p class="text-gray-700 mb-4">Plats préparés avec des produits frais pour vos événements.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Buffets sur mesure</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Plateaux repas</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Plats du jour</li>
+                            <li class="flex items-center"><i class="fas fa-check text-accent mr-2"></i> Salades composées</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Traiteur Section -->
+    <section id="traiteur" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-4">Service traiteur</h2>
+                    <p class="text-lg mb-6">Nous mettons notre savoir-faire à votre service pour vos événements privés ou professionnels.</p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-utensils text-accent mt-1 mr-3"></i>
+                            <div>
+                                <h3 class="font-bold">Réceptions</h3>
+                                <p class="text-gray-700">Mariages, anniversaires...</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-briefcase text-accent mt-1 mr-3"></i>
+                            <div>
+                                <h3 class="font-bold">Location de tourne broches</h3>
+                                <p class="text-gray-700">Lorem, ipsum dolor sit amet consectetur adipisicing elit.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-alt text-accent mt-1 mr-3"></i>
+                            <div>
+                                <h3 class="font-bold">Réservation</h3>
+                                <p class="text-gray-700">Commandez à l'avance pour garantir votre événement.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="bg-primary hover:bg-secondary text-white font-bold py-3 px-6 rounded-lg transition duration-300 inline-block">Demander un devis</a>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="img/Buffetfroid.png" alt="Service traiteur Boucherie Simon" class="w-full rounded-lg shadow-lg" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+<!-- Contact Section -->
+<section id="contact" class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-serif font-bold text-center text-primary mb-12">Nous contacter</h2>
+        
+        <div class="flex justify-center">
+            <div class="w-full md:w-2/3 bg-gray-50 p-8 rounded-lg shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-serif font-bold text-primary mb-4">Horaires d'ouverture</h3>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between border-b pb-2">
+                                <span>Lundi - Mardi</span>
+                                <span>8h00 - 12h30 | 15h00 - 19h00</span>
+                            </li>
+                            <li class="flex justify-between border-b pb-2">
+                                <span>Mercredi</span>
+                                <span>Fermé</span>
+                                
+                            </li>
+                            <li class="flex justify-between border-b pb-2">
+                                <span>Jeudi - Vendredi</span>
+                                <span>8h00 - 12h30 | 15h00 - 19h00</span>
+                            </li>
+                            <li class="flex justify-between border-b pb-2">
+                                <span>Samedi</span>
+                                <span>7h30 - 13h00</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-serif font-bold text-primary mb-4">Coordonnées</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-map-marker-alt text-accent mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-bold">Adresse</p>
+                                    <p>23 rue pierre brosolette, Flines Lez raches</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-phone-alt text-accent mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-bold">Téléphone</p>
+                                    <p>03 27 89 15 34</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-envelope text-accent mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-bold">Email</p>
+                                    <p>boucherie59148@gmail.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Map Section -->
+    <div class="bg-gray-100 py-8">
+        <div class="container mx-auto px-4">
+            <div class="rounded-lg overflow-hidden shadow-lg">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2532.123456789012!2d3.1897933!3d50.4208797!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c2c59907960fa7%3A0x16e8a72e221727c4!2sBoucherie%20charcuterie%20Traiteur%20Marie%20SIMON!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-serif font-bold mb-2">Boucherie Simon</h3>
+                    <p class="text-sm opacity-80">Boucherie - Charcuterie - Traiteur à Flines Lez Raches</p>
+                </div>
+                <div class="flex space-x-4 mb-6 md:mb-0">
+                    <a href="#" class="text-white hover:text-accent transition duration-300">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-accent transition duration-300">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                </div>
+                <div class="text-sm">
+                    <p>&copy; 2025 Boucherie Simon. Tous droits réservés.</p>
+                    <p class="mt-1"><a href="#" class="hover:underline">Mentions légales</a> | <a href="#" class="hover:underline">Politique de confidentialité</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

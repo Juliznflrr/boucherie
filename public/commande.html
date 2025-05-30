@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Administration du Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .commande {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .commande h2 {
+            margin: 0 0 0.5rem;
+            color: #007acc;
+        }
+        .commande ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="loginSection" class="min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center mb-6 text-red-600">Connexion Administrateur</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Mot de passe:</label>
+                    <input type="password" id="password" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Se connecter</button>
+                <p id="loginMessage" class="text-center text-red-500 text-xs italic mt-4"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="adminSection" class="container mx-auto p-6 hidden">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold text-red-700">Panneau d'Administration</h1>
+            <button id="logoutBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Déconnexion</button>
+        </div>
+
+        <div class="flex justify-center mb-6">
+            <button id="showOrdersBtn" class="px-6 py-3 rounded-t-lg font-semibold text-lg bg-red-600 text-white focus:outline-none">Gestion des Commandes</button>
+            <button id="showProductsBtn" class="ml-4 px-6 py-3 rounded-t-lg font-semibold text-lg bg-gray-300 text-gray-800 focus:outline-none">Gestion des Produits</button>
+        </div>
+
+        <div id="ordersContent" class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Liste des Commandes</h2>
+            <div class="mb-4 flex flex-wrap gap-2">
+    <button class="filter-day bg-gray-300 hover:bg-red-600 hover:text-white text-gray-800 font-bold py-2 px-4 rounded" data-day="all">Tous les jours</button>
+    <button class="filter-day bg-gray-300 hover:bg-red-600 hover:text-white text-gray-800 font-bold py-2 px-4 rounded" data-day="jeudi">Jeudi</button>
+    <button class="filter-day bg-gray-300 hover:bg-red-600 hover:text-white text-gray-800 font-bold py-2 px-4 rounded" data-day="vendredi">Vendredi</button>
+    <button class="filter-day bg-gray-300 hover:bg-red-600 hover:text-white text-gray-800 font-bold py-2 px-4 rounded" data-day="samedi">Samedi</button>
+</div>
+            <div id="commandes-liste" class="space-y-4">
+                </div>
+            <button id="downloadPdfBtn" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">Télécharger en PDF</button>
+            <button id="deleteAllOrdersBtn" class="mt-2 bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded ml-2">Supprimer toutes les commandes</button>
+        </div>
+
+        <div id="productsContent" class="bg-white rounded-lg shadow p-6 hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Gestion des Produits</h2>
+
+            <div class="mb-8 p-6 border rounded-lg bg-gray-50">
+                <h3 class="text-2xl font-bold text-gray-700 mb-4">Ajouter un Nouveau Produit</h3>
+                <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-2 gap-4" enctype="multipart/form-data">
+                    <div>
+                        <label for="productName" class="block text-gray-700 text-sm font-bold mb-2">Nom du produit:</label>
+                        <input type="text" id="productName" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div>
+                        <label for="productCategory" class="block text-gray-700 text-sm font-bold mb-2">Catégorie:</label>
+                        <select id="productCategory" name="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <option value="">-- Choisissez une catégorie --</option>
+                            <option value="viande">Viande</option>
+                            <option value="charcuterie">Charcuterie</option>
+                            <option value="traiteur">Traiteur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="productPrice" class="block text-gray-700 text-sm font-bold mb-2">Prix (€):</label>
+                        <input type="number" id="productPrice" name="price" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div>
+                        <label for="productPriceType" class="block text-gray-700 text-sm font-bold mb-2">Type de prix:</label>
+                        <select id="productPriceType" name="priceType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <option value="piece">À la pièce</option>
+                            <option value="kilo">Au kilo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="productDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                        <textarea id="productDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Image du produit (glisser-déposer ou cliquer):</label>
+                        <div id="imageDropZone" class="border-2 border-dashed border-gray-400 rounded p-4 text-center cursor-pointer bg-white">
+                            <span id="imageDropText">Glissez une image ici ou cliquez pour sélectionner</span>
+                            <input type="file" id="productImageFile" name="imageFile" accept="image/*" class="hidden">
+                            <img id="imagePreview" src="" alt="Prévisualisation" class="mx-auto mt-2 max-h-32 hidden" />
+                        </div>
+                        <input type="url" id="productImage" name="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mt-2" placeholder="Ou collez une URL d'image (facultatif)">
+                    </div>
+                    <div class="md:col-span-2 text-right">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Ajouter Produit</button>
+                    </div>
+                </form>
+            </div>
+
+            <h3 class="text-2xl font-bold text-gray-700 mb-4">Liste des Produits Existants</h3>
+            <div id="catalogue" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+        </div>
+    </div>
+
+    <div id="editProductModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeEditModal()">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">Modifier le Produit</h2>
+            <form id="editProductForm" class="grid grid-cols-1 gap-4">
+                <input type="hidden" id="editProductId">
+                <div>
+                    <label for="editProductName" class="block text-gray-700 text-sm font-bold mb-2">Nom du produit:</label>
+                    <input type="text" id="editProductName" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div>
+                    <label for="editProductCategory" class="block text-gray-700 text-sm font-bold mb-2">Catégorie:</label>
+                    <select id="editProductCategory" name="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+    <option value="viande">Viande</option>
+    <option value="charcuterie">Charcuterie</option>
+    <option value="traiteur">Traiteur</option>
+</select>
+                </div>
+                <div>
+                    <label for="editProductPrice" class="block text-gray-700 text-sm font-bold mb-2">Prix (€):</label>
+                    <input type="number" id="editProductPrice" name="price" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div>
+                    <label for="editProductPriceType" class="block text-gray-700 text-sm font-bold mb-2">Type de prix:</label>
+                    <select id="editProductPriceType" name="priceType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <option value="piece">À la pièce</option>
+                        <option value="kilo">Au kilo</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editProductDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                    <textarea id="editProductDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Image du produit (glisser-déposer ou cliquer):</label>
+                    <div id="editImageDropZone" class="border-2 border-dashed border-gray-400 rounded p-4 text-center cursor-pointer bg-white">
+                        <span id="editImageDropText">Glissez une image ici ou cliquez pour sélectionner</span>
+                        <input type="file" id="editProductImageFile" name="imageFile" accept="image/*" class="hidden">
+                        <img id="editImagePreview" src="" alt="Prévisualisation" class="mx-auto mt-2 max-h-32 hidden" />
+                    </div>
+                    <input type="url" id="editProductImage" name="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mt-2" placeholder="Ou collez une URL d'image (facultatif)">
+                </div>
+                <div class="flex justify-end space-x-4 mt-4">
+                    <button type="button" onclick="closeEditModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Annuler</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+<script>
+    // Elements
+    const loginSection = document.getElementById('loginSection');
+    const adminSection = document.getElementById('adminSection');
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const commandesList = document.getElementById('commandes-liste');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    const addProductForm = document.getElementById('addProductForm');
+    const logoutBtn = document.getElementById('logoutBtn'); // Added logout button
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+    const showOrdersBtn = document.getElementById('showOrdersBtn');
+    const showProductsBtn = document.getElementById('showProductsBtn');
+    const ordersContent = document.getElementById('ordersContent');
+    const productsContent = document.getElementById('productsContent');
+
+    const editProductModal = document.getElementById('editProductModal');
+    const editProductForm = document.getElementById('editProductForm');
+
+    let currentEditingProductId = null; // To store the ID of the product being edited
+    let currentDayFilter = 'all'; // Added for day filter
+
+    // --- Authentication ---
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        loginMessage.textContent = '';
+        loginMessage.classList.remove('shake');
+
+        try {
+            const res = await fetch('http://localhost:3000/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+                localStorage.setItem('isAuthenticated', 'true');
+                showAdminPanel();
+                loadCommandes();
+                loadCatalogue(); // Load products when admin logs in
+            } else {
+                loginMessage.textContent = 'Email ou mot de passe incorrect.';
+                loginMessage.classList.add('shake');
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Erreur serveur.");
+        }
+    });
+
+    function showAdminPanel() {
+        loginSection.classList.add('hidden');
+        adminSection.classList.remove('hidden');
+        showOrdersContent(); // Default to showing orders
+    }
+
+    function checkAuth() {
+        if (localStorage.getItem('isAuthenticated') === 'true') {
+            showAdminPanel();
+            loadCommandes();
+            loadCatalogue();
+        }
+    }
+
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', checkAuth);
+
+    // Logout functionality
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('isAuthenticated');
+        alert('Vous êtes déconnecté.');
+        // Redirect to the login section or reload the page to show the login form
+        loginSection.classList.remove('hidden');
+        adminSection.classList.add('hidden');
+        loginForm.reset(); // Clear login form fields
+        loginMessage.textContent = ''; // Clear any previous login messages
+    });
+
+    // --- Tab Switching ---
+    showOrdersBtn.addEventListener('click', () => {
+        showOrdersContent();
+    });
+
+    showProductsBtn.addEventListener('click', () => {
+        showProductsContent();
+    });
+
+    function showOrdersContent() {
+        ordersContent.classList.remove('hidden');
+        productsContent.classList.add('hidden');
+        showOrdersBtn.classList.add('bg-red-600', 'text-white');
+        showOrdersBtn.classList.remove('bg-gray-300', 'text-gray-800');
+        showProductsBtn.classList.add('bg-gray-300', 'text-gray-800');
+        showProductsBtn.classList.remove('bg-red-600', 'text-white');
+        loadCommandes();
+    }
+
+    function showProductsContent() {
+        productsContent.classList.remove('hidden');
+        ordersContent.classList.add('hidden');
+        showProductsBtn.classList.add('bg-red-600', 'text-white');
+        showProductsBtn.classList.remove('bg-gray-300', 'text-gray-800');
+        showOrdersBtn.classList.add('bg-gray-300', 'text-gray-800');
+        showOrdersBtn.classList.remove('bg-red-600', 'text-white');
+        loadCatalogue(); // Reload products when switching to this tab
+    }
+
+    // --- Orders Management ---
+    async function loadCommandes() {
+        try {
+            const res = await fetch('http://localhost:3000/api/commandes');
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`${res.status} ${res.statusText} - ${errorText}`);
+            }
+            let commandes = await res.json();
+            if (currentDayFilter !== 'all') {
+                commandes = commandes.filter(c => (c.pickupDay || '').toLowerCase() === currentDayFilter);
+            }
+            const commandesList = document.getElementById('commandes-liste');
+            commandesList.innerHTML = '';
+            if (commandes.length === 0) {
+                commandesList.innerHTML = '<p class="text-gray-600">Aucune commande pour le moment.</p>';
+                return;
+            }
+            commandes.forEach(commande => {
+                // Safely access customerInfo properties, or direct properties if customerInfo is missing
+                const customerName = (commande.customerInfo && commande.customerInfo.name) ? commande.customerInfo.name : commande.name || 'N/A';
+                const customerEmail = (commande.customerInfo && commande.customerInfo.email) ? commande.customerInfo.email : commande.email || 'N/A';
+                const customerPhone = (commande.customerInfo && commande.customerInfo.phone) ? commande.customerInfo.phone : commande.phone || 'N/A';
+
+                // Determine which array to use for products (cart or items)
+                const productsArray = commande.cart || commande.items || [];
+
+                const commandeDiv = document.createElement('div');
+                commandeDiv.className = "commande";
+                commandeDiv.innerHTML = `
+                    <h2 class="text-xl font-semibold">Commande de ${customerName}</h2>
+                    <p><strong>Email:</strong> ${customerEmail}</p>
+                    <p><strong>Téléphone:</strong> ${customerPhone}</p>
+                    <p><strong>Date:</strong> ${new Date(commande.date).toLocaleString()}</p>
+                    <h3 class="font-semibold mt-2">Produits:</h3>
+                    <ul class="list-disc list-inside">
+                        ${productsArray.map(item => {
+                let typeLabel = item.priceType === 'kilo' ? 'au kilo' : 'à la pièce';
+                let weightLabel = item.weight ? ` - <span class='text-xs text-green-700'>${item.weight}g</span>` : '';
+                return `<li>${item.name || 'N/A'} (${item.quantity || 1} x ${item.price || 0} €) <span class='text-xs text-gray-500'>${typeLabel}</span>${item.weight ? ` - <span class='text-xs text-green-700'>${item.weight}g</span>` : (item.priceType === 'kilo' && !item.weight ? ` - <span class='text-xs text-orange-600'>à définir avec le client au téléphone</span>` : '')}</li>`;
+            }).join('')}
+                    </ul>
+                    <p class="font-bold text-lg mt-2">Total: ${productsArray.reduce((sum, item) => sum + ((item.quantity || 0) * (item.price || 0) * (item.weight ? item.weight/1000 : 1)), 0).toFixed(2)} €</p>
+                    <button onclick="deleteCommande(${commande.id})" class="mt-2 bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded">Supprimer</button>
+                `;
+                commandesList.appendChild(commandeDiv);
+            });
+        } catch (err) {
+            console.error('Erreur lors du chargement des commandes:', err);
+            document.getElementById('commandes-liste').innerHTML = `<p class="text-red-500">Erreur lors du chargement des commandes: ${err.message}. Veuillez vérifier le serveur et le fichier config.json.</p>`;
+        }
+    }
+
+    // Download CSV
+    if (downloadCsvBtn) {
+        downloadCsvBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('http://localhost:3000/download-commandes');
+                if (!res.ok) throw new Error('Erreur de téléchargement du CSV');
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'commandes.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('Fichier CSV téléchargé avec succès !');
+            } catch (err) {
+                console.error('Erreur lors du téléchargement du CSV:', err);
+                alert('❌ Erreur lors du téléchargement du fichier CSV.');
+            }
+        });
+    }
+
+    // Download PDF
+    downloadPdfBtn.addEventListener('click', async () => {
+        try {
+            let url = 'http://localhost:3000/download-commandes-pdf';
+            if (currentDayFilter && currentDayFilter !== 'all') {
+                url += `?day=${encodeURIComponent(currentDayFilter)}`;
+            }
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Erreur de téléchargement du PDF');
+            const blob = await res.blob();
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = window.URL.createObjectURL(blob);
+            a.download = 'commandes.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(a.href);
+            alert('Fichier PDF téléchargé avec succès !');
+        } catch (err) {
+            console.error('Erreur lors du téléchargement du PDF:', err);
+            alert('❌ Erreur lors du téléchargement du fichier PDF.');
+        }
+    });
+
+    // --- Product Management ---
+
+    // Load Products for Catalogue
+    async function loadCatalogue() {
+        try {
+            const res = await fetch('http://localhost:3000/api/produits');
+            if (!res.ok) throw new Error('Erreur de chargement');
+
+            const produits = await res.json();
+            const container = document.getElementById('catalogue');
+            container.innerHTML = '';
+
+            if (produits.length === 0) {
+                container.innerHTML = '<p class="text-gray-600">Aucun produit à afficher.</p>';
+                return;
+            }
+
+            produits.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-lg shadow p-4 relative"; // Added relative for positioning buttons
+                card.innerHTML = `
+                    <img src="${prod.image || 'https://via.placeholder.com/150'}" alt="${prod.name}" class="w-full h-32 object-cover rounded mb-2">
+                    <h3 class="font-bold text-lg">${prod.name}</h3>
+                    <p class="text-sm text-gray-600">${prod.description}</p>
+                    <p class="mt-2 font-semibold text-red-600">${prod.price} € <span class="text-xs text-gray-500">/${prod.priceType === 'kilo' ? 'kg' : 'pièce'}</span></p>
+                    <p class="text-sm text-gray-500">Catégorie : ${prod.category}</p>
+                    <div class="mt-4 flex space-x-2 justify-end">
+                        <button onclick="openEditModal(${prod.id})" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded">Modifier</button>
+                        <button onclick="deleteProduct(${prod.id})" class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded">Supprimer</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Erreur lors du chargement du catalogue:', err);
+            document.getElementById('catalogue').innerHTML = '<p class="text-red-500">Erreur lors du chargement des produits.</p>';
+        }
+    }
+
+    // Add Product
+    addProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(addProductForm);
+        const newProduct = {};
+        formData.forEach((value, key) => {
+            newProduct[key] = value;
+        });
+
+        // Convert price to number
+        newProduct.price = parseFloat(newProduct.price);
+
+        try {
+            const res = await fetch('http://localhost:3000/api/produit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newProduct)
+            });
+
+            if (res.ok) {
+                alert('Produit ajouté avec succès!');
+                addProductForm.reset();
+                loadCatalogue(); // Reload products after adding
+            } else {
+                alert('Erreur lors de l\'ajout du produit.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur de connexion au serveur.');
+        }
+    });
+
+    // Delete Product
+    async function deleteProduct(productId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:3000/api/produits/${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert('Produit supprimé avec succès!');
+                loadCatalogue(); // Reload products after deletion
+            } else if (res.status === 404) {
+                alert('Produit non trouvé.');
+            } else {
+                alert('Erreur lors de la suppression du produit.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur de connexion au serveur.');
+        }
+    }
+
+    // Open Edit Modal
+    async function openEditModal(productId) {
+        try {
+            const res = await fetch('http://localhost:3000/api/produits');
+            if (!res.ok) throw new Error('Erreur de chargement des produits pour édition');
+
+            const products = await res.json();
+            const productToEdit = products.find(p => p.id === productId);
+
+            if (productToEdit) {
+                currentEditingProductId = productId;
+                document.getElementById('editProductId').value = productToEdit.id;
+                document.getElementById('editProductName').value = productToEdit.name;
+                document.getElementById('editProductCategory').value = productToEdit.category;
+                document.getElementById('editProductPrice').value = productToEdit.price;
+                document.getElementById('editProductDescription').value = productToEdit.description;
+                document.getElementById('editProductImage').value = productToEdit.image;
+                document.getElementById('editProductPriceType').value = productToEdit.priceType || 'piece';
+                document.getElementById('editImagePreview').src = productToEdit.image || '';
+                if (productToEdit.image) document.getElementById('editImagePreview').classList.remove('hidden');
+                else document.getElementById('editImagePreview').classList.add('hidden');
+                document.getElementById('editImageDropText').textContent = productToEdit.image ? 'Image chargée' : 'Glissez une image ici ou cliquez pour sélectionner';
+                editProductModal.classList.remove('hidden');
+            } else {
+                alert('Produit non trouvé pour édition.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur lors de la récupération des détails du produit.');
+        }
+    }
+
+    // Close Edit Modal
+    function closeEditModal() {
+        editProductModal.classList.add('hidden');
+        currentEditingProductId = null;
+        editProductForm.reset();
+    }
+
+    // Submit Edit Product Form
+    editProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentEditingProductId) return; // Should not happen
+
+        const formData = new FormData(editProductForm);
+        const updatedProduct = {};
+        formData.forEach((value, key) => {
+            updatedProduct[key] = value;
+        });
+
+        // Ensure ID is passed and convert price to number
+        updatedProduct.id = parseInt(document.getElementById('editProductId').value);
+        updatedProduct.price = parseFloat(updatedProduct.price);
+
+        try {
+            const res = await fetch(`http://localhost:3000/api/produits/${currentEditingProductId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedProduct)
+            });
+
+            if (res.ok) {
+                alert('Produit modifié avec succès!');
+                closeEditModal();
+                loadCatalogue(); // Reload products after modification
+            } else if (res.status === 404) {
+                alert('Produit non trouvé pour la modification.');
+            } else {
+                alert('Erreur lors de la modification du produit.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur de connexion au serveur.');
+        }
+    });
+
+    // Fonction pour supprimer une commande
+    async function deleteCommande(commandeId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) return;
+        try {
+            const res = await fetch(`http://localhost:3000/api/commandes/${commandeId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Commande supprimée avec succès !');
+                loadCommandes();
+            } else if (res.status === 404) {
+                alert('Commande non trouvée.');
+            } else {
+                alert('Erreur lors de la suppression de la commande.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur de connexion au serveur.');
+        }
+    }
+
+    // Suppression de toutes les commandes
+    const deleteAllOrdersBtn = document.getElementById('deleteAllOrdersBtn');
+    deleteAllOrdersBtn.addEventListener('click', async () => {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les commandes ?')) return;
+        try {
+            const res = await fetch('http://localhost:3000/api/commandes', {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Toutes les commandes ont été supprimées !');
+                loadCommandes();
+            } else {
+                alert('Erreur lors de la suppression de toutes les commandes.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erreur de connexion au serveur.');
+        }
+    });
+
+    // Ajout des listeners pour les boutons de filtre
+setTimeout(() => {
+    document.querySelectorAll('.filter-day').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-day').forEach(b => b.classList.remove('bg-red-600', 'text-white'));
+            this.classList.add('bg-red-600', 'text-white');
+            currentDayFilter = this.dataset.day;
+            loadCommandes();
+        });
+    });
+}, 500);
+
+    // JS pour gérer le drag & drop image (ajout et édition)
+function setupImageDropZone(dropZoneId, fileInputId, previewId, urlInputId, textId) {
+    const dropZone = document.getElementById(dropZoneId);
+    const fileInput = document.getElementById(fileInputId);
+    const preview = document.getElementById(previewId);
+    const urlInput = document.getElementById(urlInputId);
+    const dropText = document.getElementById(textId);
+    if (!dropZone || !fileInput || !preview || !urlInput || !dropText) return;
+    dropZone.addEventListener('click', (e) => {
+        // Correction : éviter la boucle infinie en ne déléguant le clic qu'à la zone elle-même
+        if (e.target !== dropZone) return;
+        fileInput.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    dropZone.addEventListener('dragenter', e => { e.preventDefault(); dropZone.classList.add('bg-gray-200'); });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('bg-gray-200'); });
+    dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('bg-gray-200'); });
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('bg-gray-200');
+        if (!e.dataTransfer || !e.dataTransfer.files || e.dataTransfer.files.length === 0) {
+            dropText.textContent = 'Aucun fichier détecté';
+            return;
+        }
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.match(/^image\//)) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                preview.src = ev.target.result;
+                preview.classList.remove('hidden');
+                urlInput.value = ev.target.result;
+                dropText.textContent = 'Image chargée';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            dropText.textContent = 'Format de fichier non supporté';
+        }
+    });
+    fileInput.addEventListener('change', e => {
+        // Correction : forcer le focus sur le dropZone pour certains navigateurs
+        dropZone.focus && dropZone.focus();
+        const file = e.target.files && e.target.files[0];
+        if (file && file.type.match(/^image\//)) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                preview.src = ev.target.result;
+                preview.classList.remove('hidden');
+                urlInput.value = ev.target.result;
+                dropText.textContent = 'Image chargée';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            dropText.textContent = 'Format de fichier non supporté';
+        }
+    });
+    urlInput.addEventListener('input', e => {
+        if (urlInput.value.startsWith('data:image/') || urlInput.value.startsWith('http')) {
+            preview.src = urlInput.value;
+            preview.classList.remove('hidden');
+            dropText.textContent = 'Image chargée';
+        } else {
+            preview.classList.add('hidden');
+            dropText.textContent = 'Glissez une image ici ou cliquez pour sélectionner';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupImageDropZone('imageDropZone', 'productImageFile', 'imagePreview', 'productImage', 'imageDropText');
+    setupImageDropZone('editImageDropZone', 'editProductImageFile', 'editImagePreview', 'editProductImage', 'editImageDropText');
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+npm init -y
+npm install express cors
+npm install pdfkit
+node server.js
